@@ -1,0 +1,15 @@
+// src/App.js
+import React from 'react';
+import './Login.css';
+import LoginPage from './LoginPage';
+
+function App() {
+  return (
+    <div className="App">
+      <LoginPage />
+    </div>
+  );
+}
+
+export default App;
+
