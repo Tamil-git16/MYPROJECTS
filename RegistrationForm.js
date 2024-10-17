@@ -1,4 +1,3 @@
-// RegistrationForm.js
 import React, { useState } from 'react';
 import './RegistrationForm.css'; // Import the CSS file
 
@@ -75,11 +74,40 @@ const RegistrationForm = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {  // Marked the function as `async`
     e.preventDefault();
     if (validateForm()) {
-      console.log('Form Data Submitted:', formData);
-      // Handle form submission (e.g., send data to server)
+      // Simulating API call to register user
+      const userData = {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        confirm_Password: formData.confirmPassword,
+      };
+      console.log("User Data: ", userData);
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/signup/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        });
+
+        const data = await response.json();
+        console.log(response)
+        if (response.ok) {
+          alert('Registration successful!');
+          // Redirect to login or dashboard after successful registration
+          // e.g., history.push('/login');
+        } else {
+          alert('Registration failed: ' + data.message);
+        }
+      } catch (error) {
+        console.error('Error during registration:', error);
+        alert('There was an error registering the user.');
+      }
     }
   };
 
@@ -96,7 +124,7 @@ const RegistrationForm = () => {
             value={formData.username}
             onChange={handleInputChange}
           />
-          {errors.username && <span>{errors.username}</span>}
+          {errors.username && <span className="error">{errors.username}</span>}
         </div>
 
         {/* Email Field */}
@@ -108,7 +136,7 @@ const RegistrationForm = () => {
             value={formData.email}
             onChange={handleInputChange}
           />
-          {errors.email && <span>{errors.email}</span>}
+          {errors.email && <span className="error">{errors.email}</span>}
         </div>
 
         {/* Password Field */}
@@ -120,7 +148,7 @@ const RegistrationForm = () => {
             value={formData.password}
             onChange={handleInputChange}
           />
-          {errors.password && <span>{errors.password}</span>}
+          {errors.password && <span className="error">{errors.password}</span>}
         </div>
 
         {/* Confirm Password Field */}
@@ -132,7 +160,7 @@ const RegistrationForm = () => {
             value={formData.confirmPassword}
             onChange={handleInputChange}
           />
-          {errors.confirmPassword && <span>{errors.confirmPassword}</span>}
+          {errors.confirmPassword && <span className="error">{errors.confirmPassword}</span>}
         </div>
 
         {/* Submit Button */}
