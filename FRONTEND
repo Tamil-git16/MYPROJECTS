@@ -1,0 +1,465 @@
+app.css 
+body {
+  font-family: 'Helvetica Neue', sans-serif;
+  margin: 0;
+  padding: 10px; /* Reduced padding */
+  background: linear-gradient(135deg, #5fbfcf 50%, #888382 50%);
+}
+
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #ff3e00;
+  min-height: 15vh; /* Reduced height */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin); 
+  color: #ffffff;
+  padding: 20px; /* Reduced padding */
+}
+
+form {
+  max-width: 500px; /* Reduced width */
+  margin: auto;
+  padding: 30px; /* Reduced padding */
+  border: 2px solid #141413;
+  border-radius: 10px; /* Slightly less rounded */
+  background-color: linear-gradient(135deg, #e0e0e0 50%, #ffffff 50%);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Reduced shadow */
+  transition: box-shadow 0.3s, border-color 0.3s;
+}
+
+form:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-color: #f50d0d; 
+}
+
+h2 {
+  margin-bottom: 15px; /* Reduced margin */
+  font-weight: bold;
+  color: #333333;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px; /* Reduced space below labels */
+  font-weight: bold;
+  color: #444444;
+}
+
+input[type="text"],
+select,
+input[type="date"],
+input[type="time"],
+textarea {
+  width: 100%;
+  padding: 10px; /* Reduced padding */
+  margin-bottom: 15px; /* Reduced space below inputs */
+  border: 2px solid #ccc;
+  border-radius: 5px; /* Slightly less rounded */
+  transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+select:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+textarea:focus {
+  border-color: #1b1b1a;
+  outline: none; 
+}
+
+textarea {
+  resize: vertical; 
+}
+
+button {
+  padding: 10px 20px; /* Reduced padding */
+  background-color: #df0a0a;
+  color: white;
+  border: none;
+  border-radius: 25px; /* Less rounded */
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin-top: 10px; /* Reduced space above submit button */
+}
+
+button:hover {
+  background-color: #1d1d1d; 
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0); 
+}
+
+.options-container {
+  margin-top: 15px; /* Reduced space above options */
+}
+
+.option-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px; /* Reduced space between option containers */
+}
+
+.option-container input {
+  flex: 1;
+  padding: 10px; /* Consistent padding */
+  border: 2px solid #1b1b1a;
+  border-radius: 5px;
+  margin-right: 10px; /* Reduced space between input and button */
+  transition: border-color 0.3s;
+}
+
+.option-container input:focus {
+  border-color: #ff3e00; 
+}
+
+.option-container button {
+  background-color: #dc3545; 
+  color: white;
+  border: none;
+  padding: 8px 12px; /* Reduced padding */
+  border-radius: 5px;
+  transition: background-color 0.3s, transform 0.2s;
+  margin-left: 10px; /* Reduced space between option input and remove button */
+}
+
+.option-container button:hover {
+  background-color: #c82333; 
+  transform: translateY(-2px);
+}
+
+.option-container button:active {
+  transform: translateY(0); 
+}
+
+.add-option-button {
+  margin-top: 10px; /* Reduced space above add option button */
+  margin-bottom: 20px; /* Reduced space below add option button */
+}
+App.js
+import React, { useState } from 'react';
+import axios from 'axios';
+import './App.css';
+
+
+const App = () => {
+  const [questions, setQuestions] = useState([{ 
+    question: '', 
+    options: [''], 
+    questionType: 'Multiple choice',
+    answer: '', 
+    file: null 
+  }]);
+  
+  const [submittedData, setSubmittedData] = useState([]); 
+  const [responses, setResponses] = useState({}); // Track responses for submitted questions
+
+  const handleInputChange = (index, event) => {
+    const { name, value } = event.target;
+    const updatedQuestions = [...questions];
+    updatedQuestions[index][name] = value;
+    setQuestions(updatedQuestions);
+  };
+
+  const handleOptionChange = (questionIndex, optionIndex, value) => {
+    const updatedQuestions = [...questions];
+    updatedQuestions[questionIndex].options[optionIndex] = value;
+    setQuestions(updatedQuestions);
+  };
+
+  const handleAnswerChange = (questionIndex, value) => {
+    const updatedQuestions = [...questions];
+    updatedQuestions[questionIndex].answer = value;
+    setQuestions(updatedQuestions);
+  };
+
+  const handleFileChange = (questionIndex, event) => {
+    const updatedQuestions = [...questions];
+    updatedQuestions[questionIndex].file = event.target.files[0]; 
+    setQuestions(updatedQuestions);
+  };
+
+  const addOption = (index) => {
+    const updatedQuestions = [...questions];
+    updatedQuestions[index].options.push('');
+    setQuestions(updatedQuestions);
+  };
+
+  const removeOption = (questionIndex, optionIndex) => {
+    const updatedQuestions = [...questions];
+    if (updatedQuestions[questionIndex].options.length > 1) {
+      updatedQuestions[questionIndex].options.splice(optionIndex, 1);
+      setQuestions(updatedQuestions);
+    }
+  };
+
+  const addQuestion = () => {
+    setQuestions([...questions, { question: '', options: [''], questionType: 'Multiple choice', answer: '', file: null }]);
+  };
+
+  const handleSubmit = async (event, questionIndex) => {
+    event.preventDefault();
+    const question = questions[questionIndex];
+
+    // Validation code...
+    if (question.question.trim() === '') {
+      alert("Please provide a question.");
+      return;
+    }
+
+    if (question.questionType === 'Multiple choice') {
+      if (question.options.length === 0 || question.options.every(option => option.trim() === '')) {
+        alert("Please provide at least one option for this question.");
+        return;
+      }
+    } else if (['Short answer', 'Paragraph'].includes(question.questionType)) {
+      if (question.answer.trim() === '') {
+        alert("Please provide an answer for this question.");
+        return;
+      }
+    } else if (question.questionType === 'File upload') {
+      if (!question.file) {
+        alert("Please upload a file for this question.");
+        return;
+      }
+    }
+
+    // Prepare data for submission
+    const formData = new FormData();
+    formData.append('question_text', question.question);
+    formData.append('question_type', question.questionType);
+    formData.append('options', JSON.stringify(question.options));
+    formData.append('answer', question.answer);
+    if (question.file) {
+      formData.append('file', question.file);
+    }
+
+    try {
+      const response = await axios.post('http://localhost:8000/api/questions/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      setSubmittedData(prevData => [...prevData, response.data]);
+      alert(`${question.questionType} Question Submitted!`);
+    } catch (error) {
+      console.error('Error submitting question:', error);
+      alert('Error submitting question. Please try again.');
+    }                                                                                                                
+  };
+
+  // Update response state when user types in the response input
+  const handleResponseChange = (index, value) => {
+    setResponses(prev => ({
+      ...prev,
+      [index]: value,
+    }));
+  };
+
+  // Handle response submission
+  const handleResponseSubmit = (index) => {
+    const response = responses[index] || '';
+    alert(`Response for question ${index + 1}: ${response}`);
+    // You can send the response to your API here if needed
+  };
+
+  return (
+    <div className="App">
+      <form>
+        {questions.map((q, questionIndex) => (
+          <div key={questionIndex}>
+            <div>
+              <label htmlFor={`question-${questionIndex}`}>Question:</label>
+              <input
+                type="text"
+                id={`question-${questionIndex}`}
+                name="question"
+                value={q.question}
+                onChange={(event) => handleInputChange(questionIndex, event)}
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor={`questionType-${questionIndex}`}>Question Type:</label>
+              <select
+                id={`questionType-${questionIndex}`}
+                name="questionType"
+                value={q.questionType}
+                onChange={(event) => handleInputChange(questionIndex, event)}
+              >
+                <option value="Multiple choice">Multiple choice</option>
+                <option value="Short answer">Short answer</option>
+                <option value="Paragraph">Paragraph</option>
+                <option value="File upload">File upload</option>
+              </select>
+            </div>
+
+            {q.questionType === 'Multiple choice' && (
+              <div>
+                <h4>Options:</h4>
+                {q.options.map((option, optionIndex) => (
+                  <div key={optionIndex} style={{ display: 'flex', alignItems: 'center' }}>
+                    <input 
+                      type="text" 
+                      value={option} 
+                      onChange={(e) => handleOptionChange(questionIndex, optionIndex, e.target.value)} 
+                      placeholder={`Option ${optionIndex + 1}`} 
+                      required 
+                      style={{ width: '100%', padding: '10px', marginRight: '10px' }} 
+                    />
+                    <button type="button" onClick={() => removeOption(questionIndex, optionIndex)}>Remove</button>
+                  </div>
+                ))}
+                <button type="button" onClick={() => addOption(questionIndex)}>Add Option</button>
+              </div>
+            )}
+
+            <div>
+              <label htmlFor={`answer-${questionIndex}`}>Your Answer:</label>
+              {q.questionType === 'File upload' ? (
+                <input
+                  type="file"
+                  id={`file-${questionIndex}`}
+                  onChange={(e) => handleFileChange(questionIndex, e)}
+                  required
+                />
+              ) : (
+                <input
+                  type="text"
+                  id={`answer-${questionIndex}`}
+                  value={q.answer}
+                  onChange={(e) => handleAnswerChange(questionIndex, e.target.value)}
+                  required
+                />
+              )}
+            </div>
+
+            <button onClick={(e) => handleSubmit(e, questionIndex)}>Submit</button>
+          </div>
+        ))}
+        
+        <button type="button" onClick={addQuestion}>Add Question</button>
+      </form>
+
+      {submittedData.length > 0 && (
+        <div className="submission-summary">
+          <h2>Submitted Data:</h2>
+          {submittedData.map((data, index) => (
+            <div key={index}>
+              <p><strong>Question:</strong> {data.question}</p>
+              <p><strong>Question Type:</strong> {data.questionType}</p>
+              <h3>Options:</h3>
+              <ul>
+                {data.options.map((option, idx) => (
+                  <li key={idx}>{option}</li>
+                ))}
+              </ul>
+              <p><strong>Your Answer:</strong> {data.answer}</p>
+              {data.file && <p><strong>Uploaded File:</strong> {data.file.name}</p>}
+              
+              {/* Response Button */}
+              <div>
+                <input 
+                  type="text" 
+                  placeholder="Your Response" 
+                  value={responses[index] || ''} 
+                  onChange={(e) => handleResponseChange(index, e.target.value)} 
+                />
+                <button onClick={() => handleResponseSubmit(index)}>Respond</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default App;
+APP.TEXT.JS
+import { render, screen } from '@testing-library/react';
+import App from './App';
+
+test('renders learn react link', () => {
+  render(<App />);
+  const linkElement = screen.getByText(/learn react/i);
+  expect(linkElement).toBeInTheDocument();
+});
+INDEX.JS
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+INDEX.CSS
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+OPTION.JS
+import React, { useState } from 'react';
+import './App.css';
+
+const Option = ({ index, value, onOptionChange, onRemoveOption }) => {
+  const [isTextOption, setIsTextOption] = useState(false); // State for text option
+
+  const handleChange = (event) => {
+    onOptionChange(index, event.target.value);
+  };
+
+  const handleTextOptionChange = (event) => {
+    setIsTextOption(event.target.checked);
+  };
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={isTextOption ? '' : value} // Clear value if text option is selected
+        onChange={handleChange}
+        placeholder={isTextOption ? "Enter custom text" : "Option"}
+        disabled={isTextOption} // Disable the default input when using text option
+      />
+      <label>
+        <input 
+          type="checkbox" 
+          checked={isTextOption} 
+          onChange={handleTextOptionChange} 
+        />
+        Use text option
+      </label>
+      <button type="button" onClick={() => onRemoveOption(index)}>Remove</button>
+    </div>
+  );
+};
+
+export default Option;
